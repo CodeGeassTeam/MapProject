@@ -1,0 +1,46 @@
+{% extends "layout.html" %}
+{% block title %}UWI Map{% endblock %}
+{% block page %}UWI Map{% endblock %}
+
+{{ super() }}
+
+{% block content %}
+    <h1>UWI Map</h1>
+    {% if is_authenticated %}
+        <p>Welcome {{current_user.username}}</p>
+    {% endif %}
+    
+    <div id="map" style="width: 100%; height: 600px; margin: 20px 0; border: 1px solid #ccc;"></div>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <script>
+        // Initialize the map centered on UWI St. Augustine
+        const map = L.map('map').setView([10.640559, -61.399576], 19);  // Zoom level 19 for close view
+        
+        // Add OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            maxZoom: 19
+        }).addTo(map);
+        
+        // Add a marker for UWI
+        const uwiMarker = L.marker([10.640559, -61.399576]).addTo(map)
+            .bindPopup('<b>UWI St. Augustine</b><br>University of the West Indies')
+            .openPopup();
+        
+        // Optional: Add a circle to highlight the area
+        // L.circle([10.640559, -61.399576], {
+        //     color: 'blue',
+        //     fillColor: '#30f',
+        //     fillOpacity: 0.2,
+        //     radius: 100  // 100 meters radius
+        // }).addTo(map).bindPopup("UWI Campus Area");
+    </script>
+    
+    <p>This map shows the University of the West Indies St. Augustine campus.</p>
+{% endblock %}
