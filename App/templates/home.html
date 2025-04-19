@@ -5,6 +5,41 @@
 {{ super() }}
 
 {% block content %}
+<style>
+    body, html {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        width: 100%;
+    }
+    
+    .content {
+        height: 100vh;
+        width: 100vw;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .map-header {
+        padding: 10px;
+        background: #f8f9fa;
+        z-index: 1000;
+    }
+    
+    #map {
+        flex: 1;
+        width: 100%;
+    }
+
+    .map-footer {
+        padding: 5px;
+        background: #f8f9fa;
+        text-align: center;
+        font-size: 0.8em;
+        z-index: 1000;
+    }
+</style>
+
     <h1>UWI Map</h1>
     {% if is_authenticated %}
         <p>Welcome {{current_user.username}}</p>
@@ -20,7 +55,7 @@
     
     <script>
         // Initialize the map centered on UWI St. Augustine
-        const map = L.map('map').setView([10.640559, -61.399576], 19);  // Zoom level 19 for close view
+        const map = L.map('map').setView([10.640559, -61.399576], 16);  // Zoom level 19 for close view
         
         // Add OpenStreetMap tiles
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -28,7 +63,7 @@
             maxZoom: 19
         }).addTo(map);
         
-        // Add a marker for UWI
+        // Add a marker for UWI (more markers can be added similarly) (information can be added to .bindPopup)
         const uwiMarker = L.marker([10.640559, -61.399576]).addTo(map)
             .bindPopup('<b>UWI St. Augustine</b><br>University of the West Indies')
             .openPopup();
