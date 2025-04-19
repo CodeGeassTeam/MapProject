@@ -23,6 +23,7 @@ def add_views(app):
 
 def create_app(overrides={}):
     app = Flask(__name__, static_url_path='/static')
+    app.config['TEMPLATES_AUTO_RELOAD'] = True  # Add this line
     load_config(app, overrides)
     CORS(app)
     add_auth_context(app)
