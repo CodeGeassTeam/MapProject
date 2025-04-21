@@ -1,7 +1,6 @@
 {% extends "layout.html" %}
 {% block title %}NavUWI{% endblock %}
 {% block page %}NavUWI{% endblock %}
-
 {{ super() }}
 
 {% block content %}
@@ -257,6 +256,102 @@
         margin-bottom: 8px;
     }
 
+    /* Modal Popup Styles */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 2000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.7);
+    }
+
+    .modal-content {
+        background-color: #192F61;
+        margin: 15% auto;
+        padding: 30px;
+        border-radius: 20px;
+        width: 80%;
+        max-width: 500px;
+        color: white;
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .modal h2 {
+        font-family: 'Oswald', sans-serif;
+        margin-bottom: 20px;
+        color: #DBE3F6;
+        text-align: center;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+    }
+
+    .form-group input, .form-group select {
+        width: 100%;
+        padding: 12px;
+        border-radius: 10px;
+        border: none;
+        background-color: #254380;
+        color: white;
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .form-group input::placeholder {
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    .form-buttons {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 30px;
+    }
+
+    .form-buttons button {
+        padding: 12px 25px;
+        border-radius: 50px;
+        border: none;
+        font-weight: 600;
+        cursor: pointer;
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .cancel-btn {
+        background-color: #3A5894;
+        color: white;
+    }
+
+    .submit-btn {
+        background-color: #DBE3F6;
+        color: #0D172B;
+    }
+
+    /* Instruction overlay */
+    .instruction-overlay {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: rgba(25, 47, 97, 0.9);
+        color: white;
+        padding: 15px 25px;
+        border-radius: 10px;
+        text-align: center;
+        z-index: 1500;
+        pointer-events: none;
+        transition: opacity 0.3s;
+    }
+
     /* Media Queries for Responsive Design */
     @media screen and (max-width: 1024px) {
         .search-input {
@@ -307,6 +402,11 @@
         .detail-item {
             font-size: 16px;
         }
+
+        .modal-content {
+            width: 90%;
+            margin: 30% auto;
+        }
     }
 
     @media screen and (max-width: 576px) {
@@ -348,6 +448,15 @@
         
         .profile-image-placeholder img {
             max-height: 200px;
+        }
+
+        .form-buttons {
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .form-buttons button {
+            width: 100%;
         }
     }
 
@@ -405,6 +514,10 @@
         </div>
         <div class="map-container">
             <div id="map"></div>
+            <!-- Added instruction overlay -->
+            <div id="instructionOverlay" class="instruction-overlay" style="display: none;">
+                <p>Click on the map to place your marker</p>
+            </div>
         </div>
         <div class="map-Filter">
             <label for="facultyFilter"><h5>Select Faculty:</h5></label>
@@ -436,8 +549,40 @@
         </div>
         <div class="details-section">
             <div class="detail-item"><h5 style="font-weight: 600;font-family: 'Poppins', sans-serif;"></h5></div>
-            
-            <button class="add-marker-btn">Add marker</button>
+            {% if is_authenticated %}                
+                <button class="add-marker-btn" id="addMarkerBtn">Add marker</button>
+            {% endif %}          
+        </div>
+    </div>
+
+    <!-- Add Marker Modal -->
+    <div id="addMarkerModal" class="modal">
+        <div class="modal-content">
+            <h2>Add New Marker</h2>
+            <form id="markerForm">
+                <div class="form-group">
+                    <label for="markerName">Name:</label>
+                    <input type="text" id="markerName" name="markerName" placeholder="Enter location name" required>
+                </div>
+                <div class="form-group">
+                    <label for="markerFaculty">Faculty:</label>
+                    <select id="markerFaculty" name="markerFaculty" required>
+                        <option value="">-- Select Faculty --</option>
+                        <option value="Engineering">Engineering</option>
+                        <option value="Science & Technology">Science & Technology</option>
+                        <option value="Humanities & Education">Humanities & Education</option>
+                        <option value="Law">Law</option>
+                        <option value="Food & Agriculture">Agriculture</option>
+                        <option value="Medical Sciences">Medical Sciences</option>
+                        <option value="Social Sciences">Social Sciences</option>
+                        <option value="Sport">Sport</option>
+                    </select>
+                </div>
+                <div class="form-buttons">
+                    <button type="button" class="cancel-btn" id="cancelMarkerBtn">Cancel</button>
+                    <button type="submit" class="submit-btn">Add Marker</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -457,8 +602,10 @@
 
     let allMarkers = [];
     let currentMarkers = [];
+    let tempMarker = null;
+    let addingMarker = false;
+    const instructionOverlay = document.getElementById("instructionOverlay");
 
-    
     {% for marker in markers %}
         const marker = L.marker([{{ marker.lat }}, {{ marker.lon }}]).addTo(map);
         marker.bindPopup("<strong>{{ marker.room }}</strong><br>{{ marker.building }}");
@@ -484,6 +631,23 @@
         } catch (err) {
             console.error("Error fetching building data:", err);
         }
+    }
+
+    function updateDetailPanel(tags) {
+        const detailDiv = document.querySelector('.detail-item');
+        let content = "<h5 style='font-weight: 600;font-family: Poppins, sans-serif;'>Details:</h5>";
+
+        if (!tags || Object.keys(tags).length === 0) {
+            content += "<p>No details found.</p>";
+        } else {
+            content += "<ul style='list-style: none; padding: 0;'>";
+            for (let key in tags) {
+                content += `<li><strong>${key}</strong>: ${tags[key]}</li>`;
+            }
+            content += "</ul>";
+        }
+
+        detailDiv.innerHTML = content;
     }
 
     function processBuildings(elements) {
@@ -526,24 +690,6 @@
         return content;
     }
 
-    function updateDetailPanel(tags) {
-    const detailDiv = document.querySelector('.detail-item');
-    let content = "<h5 style='font-weight: 600;font-family: Poppins, sans-serif;'>Details:</h5>";
-
-    if (!tags || Object.keys(tags).length === 0) {
-        content += "<p>No details found.</p>";
-    } else {
-        content += "<ul style='list-style: none; padding: 0;'>";
-        for (let key in tags) {
-            content += `<li><strong>${key}</strong>: ${tags[key]}</li>`;
-        }
-        content += "</ul>";
-    }
-
-    detailDiv.innerHTML = content;
-    }
-    
-
     function displayMarkers(markers) {
         currentMarkers.forEach(m => map.removeLayer(m));
         currentMarkers = markers;
@@ -559,7 +705,31 @@
         }
     }
 
-    map.on('click', async function (e) {
+    // Store the original click handler
+    const originalClickHandler = async function (e) {
+        if (addingMarker) {
+            // If in marker adding mode, place temporary marker
+            if (tempMarker) {
+                map.removeLayer(tempMarker);
+            }
+            
+            tempMarker = L.marker(e.latlng, {opacity: 0.7}).addTo(map);
+            tempMarker.bindPopup("New marker location").openPopup();
+            
+            // Show the form after location is selected
+            document.getElementById("addMarkerModal").style.display = "block";
+            
+            // Hide instruction overlay
+            instructionOverlay.style.display = "none";
+            
+            // Disable marker adding mode after selection
+            addingMarker = false;
+            map.getContainer().style.cursor = '';
+            
+            return;
+        }
+        
+        // Original click handler logic
         const lat = e.latlng.lat;
         const lon = e.latlng.lng;
         const delta = 0.0001;
@@ -597,19 +767,104 @@
                     .setContent(info)
                     .openOn(map);
 
-                    updateDetailPanel(tags);
-
+                updateDetailPanel(tags);
             } else {
                 L.popup()
                     .setLatLng([lat, lon])
                     .setContent("No map data found at this location.")
                     .openOn(map);
-                    updateDetailPanel(null);
+                updateDetailPanel(null);
             }
         } catch (error) {
             console.error("Error fetching data from Overpass:", error);
-            updateDetailPanel(null); 
+            updateDetailPanel(null);
         }
+    };
+
+    // Set the original click handler
+    map.on('click', originalClickHandler);
+
+    // Modal functionality
+    const modal = document.getElementById("addMarkerModal");
+    const addMarkerBtn = document.getElementById("addMarkerBtn");
+    const cancelMarkerBtn = document.getElementById("cancelMarkerBtn");
+    const markerForm = document.getElementById("markerForm");
+
+    // Open modal when Add marker button is clicked
+    addMarkerBtn.addEventListener("click", function() {
+        // Enable map selection mode first
+        addingMarker = true;
+        map.getContainer().style.cursor = 'crosshair';
+        
+        // Show instruction overlay
+        instructionOverlay.style.display = "block";
+    });
+
+    // Close modal when Cancel button is clicked
+    cancelMarkerBtn.addEventListener("click", function() {
+        modal.style.display = "none";
+        // Remove temporary marker if exists
+        if (tempMarker) {
+            map.removeLayer(tempMarker);
+            tempMarker = null;
+        }
+        // Disable map selection mode
+        addingMarker = false;
+        map.getContainer().style.cursor = '';
+    });
+
+    // Close modal when clicking outside of it
+    window.addEventListener("click", function(event) {
+        if (event.target === modal) {
+            modal.style.display = "none";
+            // Remove temporary marker if exists
+            if (tempMarker) {
+                map.removeLayer(tempMarker);
+                tempMarker = null;
+            }
+            // Disable map selection mode
+            addingMarker = false;
+            map.getContainer().style.cursor = '';
+        }
+    });
+
+    // Handle form submission
+    markerForm.addEventListener("submit", function(e) {
+        e.preventDefault();
+        
+        const name = document.getElementById("markerName").value;
+        const faculty = document.getElementById("markerFaculty").value;
+        
+        // Check if location was selected on map
+        if (!tempMarker) {
+            alert("Please select a location on the map first.");
+            return;
+        }
+        
+        // Add the new marker to the map with popup
+        const newMarker = L.marker([tempMarker.getLatLng().lat, tempMarker.getLatLng().lng]).addTo(map);
+        newMarker.bindPopup(`<strong>${name}</strong><br>Faculty: ${faculty}`);
+        newMarker.faculty = faculty;
+        
+        // Add to markers array
+        allMarkers.push(newMarker);
+        currentMarkers.push(newMarker);
+        
+        // Here you would typically send this data to your server
+        console.log("New marker added:", {
+            name: name,
+            faculty: faculty,
+            lat: tempMarker.getLatLng().lat,
+            lng: tempMarker.getLatLng().lng
+        });
+        
+        // Remove temporary marker
+        map.removeLayer(tempMarker);
+        tempMarker = null;
+        
+        // Close modal and reset form
+        modal.style.display = "none";
+        markerForm.reset();
     });
 
     // Fix map size issues when view changes
