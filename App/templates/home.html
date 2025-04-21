@@ -549,9 +549,15 @@
         </div>
         <div class="details-section">
             <div class="detail-item"><h5 style="font-weight: 600;font-family: 'Poppins', sans-serif;"></h5></div>
+
             {% if is_authenticated %}                
                 <button class="add-marker-btn" id="addMarkerBtn">Add marker</button>
-            {% endif %}          
+
+            {%else%}
+                <div id="addMarkerBtn"></div>
+            {% endif %}
+                
+                   
         </div>
     </div>
 
