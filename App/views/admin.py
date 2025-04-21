@@ -17,3 +17,4 @@ class AdminView(ModelView):
 def setup_admin(app):
     admin = Admin(app, name='FlaskMVC', template_mode='bootstrap3')
     admin.add_view(AdminView(User, db.session))
+
