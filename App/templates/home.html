@@ -549,12 +549,12 @@
         <div class="details-section">
             <div class="detail-item"><h5 style="font-weight: 600;font-family: 'Poppins', sans-serif;"></h5></div>
 
-            
+            <div id="addMarkerBtn"></div>
                    
         </div>
     </div>
 
-    
+</div>    
 
 <!-- Leaflet CSS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -575,9 +575,13 @@
     let addingMarker = false;
     const instructionOverlay = document.getElementById("instructionOverlay");
 
+    // Initialize markers from database
     {% for marker in markers %}
         const marker = L.marker([{{ marker.lat }}, {{ marker.lon }}]).addTo(map);
         marker.bindPopup("<strong>{{ marker.room }}</strong><br>{{ marker.building }}");
+        // Add faculty property to each marker
+        marker.faculty = "{{ marker.faculty }}"; // Make sure your marker model has a faculty field
+        allMarkers.push(marker);
     {% endfor %}
 
     async function fetchBuildings() {
@@ -602,41 +606,39 @@
         }
     }
 
-    function updateDetailPanel(tags) {
-        const detailDiv = document.querySelector('.detail-item');
-        let content = "<h5 style='font-weight: 600;font-family: Poppins, sans-serif;'>Details:</h5>";
-
-        if (!tags || Object.keys(tags).length === 0) {
-            content += "<p>No details found.</p>";
-        } else {
-            content += "<ul style='list-style: none; padding: 0;'>";
-            for (let key in tags) {
-                content += `<li><strong>${key}</strong>: ${tags[key]}</li>`;
-            }
-            content += "</ul>";
-        }
-
-        detailDiv.innerHTML = content;
-    }
-
     function processBuildings(elements) {
         elements.forEach(el => {
             const tags = el.tags || {};
             const name = tags.name || '';
-            const faculty = tags.faculty || extractFacultyFromName(name);
+            const faculty = tags.faculty || extractFacultyFromName(name) || 'Unknown';
             const lat = el.center?.lat;
             const lon = el.center?.lon;
 
             if (!lat || !lon) return;
 
             const marker = L.marker([lat, lon]).bindPopup(generatePopupContent(tags));
-            marker.faculty = faculty;
+            marker.faculty = faculty; // Make sure faculty is properly assigned
             allMarkers.push(marker);
         });
 
+        // Display all markers initially
         displayMarkers(allMarkers);
     }
 
+    function filterByFaculty(selected) {
+        if (!selected || selected === "") {
+            // Show all markers if no faculty is selected
+            displayMarkers(allMarkers);
+        } else {
+            // Filter markers by selected faculty
+            const filtered = allMarkers.filter(marker => {
+                return marker.faculty && marker.faculty.toLowerCase() === selected.toLowerCase();
+            });
+            displayMarkers(filtered);
+        }
+    }
+
+    // Rest of your existing functions...
     function extractFacultyFromName(name) {
         const faculties = [
             "Engineering", "Science & Technology", "Humanities & Education",
@@ -660,181 +662,19 @@
     }
 
     function displayMarkers(markers) {
+        // Clear current markers
         currentMarkers.forEach(m => map.removeLayer(m));
-        currentMarkers = markers;
-        currentMarkers.forEach(m => m.addTo(map));
-    }
-
-    function filterByFaculty(selected) {
-        if (!selected) {
-            displayMarkers(allMarkers);
-        } else {
-            const filtered = allMarkers.filter(marker => marker.faculty === selected);
-            displayMarkers(filtered);
-        }
-    }
-
-    // Store the original click handler
-    const originalClickHandler = async function (e) {
-        if (addingMarker) {
-            // If in marker adding mode, place temporary marker
-            if (tempMarker) {
-                map.removeLayer(tempMarker);
-            }
-            
-            tempMarker = L.marker(e.latlng, {opacity: 0.7}).addTo(map);
-            tempMarker.bindPopup("New marker location").openPopup();
-            
-            // Show the form after location is selected
-            document.getElementById("addMarkerModal").style.display = "block";
-            
-            // Hide instruction overlay
-            instructionOverlay.style.display = "none";
-            
-            // Disable marker adding mode after selection
-            addingMarker = false;
-            map.getContainer().style.cursor = '';
-            
-            return;
-        }
+        currentMarkers = [];
         
-        // Original click handler logic
-        const lat = e.latlng.lat;
-        const lon = e.latlng.lng;
-        const delta = 0.0001;
-        const bbox = `${lat - delta},${lon - delta},${lat + delta},${lon + delta}`;
-
-        const query = `
-            [out:json][timeout:25];
-            (
-              node(${bbox});
-              way(${bbox});
-              relation(${bbox});
-            );
-            out center tags;
-        `;
-
-        const url = 'https://overpass-api.de/api/interpreter?data=' + encodeURIComponent(query);
-
-        try {
-            const response = await fetch(url);
-            const data = await response.json();
-
-            if (data.elements.length > 0) {
-                const closest = data.elements[0];
-                const tags = closest.tags || {};
-                const center = closest.center || { lat: closest.lat, lon: closest.lon };
-
-                let info = "<h4>Place Details</h4><ul>";
-                for (let key in tags) {
-                    info += `<li><strong>${key}</strong>: ${tags[key]}</li>`;
-                }
-                info += "</ul>";
-
-                L.popup()
-                    .setLatLng([center.lat, center.lon])
-                    .setContent(info)
-                    .openOn(map);
-
-                updateDetailPanel(tags);
-            } else {
-                L.popup()
-                    .setLatLng([lat, lon])
-                    .setContent("No map data found at this location.")
-                    .openOn(map);
-                updateDetailPanel(null);
-            }
-        } catch (error) {
-            console.error("Error fetching data from Overpass:", error);
-            updateDetailPanel(null);
-        }
-    };
-
-    // Set the original click handler
-    map.on('click', originalClickHandler);
-
-    // Modal functionality
-    const modal = document.getElementById("addMarkerModal");
-    const addMarkerBtn = document.getElementById("addMarkerBtn");
-    const cancelMarkerBtn = document.getElementById("cancelMarkerBtn");
-    const markerForm = document.getElementById("markerForm");
-
-    // Open modal when Add marker button is clicked
-    addMarkerBtn.addEventListener("click", function() {
-        // Enable map selection mode first
-        addingMarker = true;
-        map.getContainer().style.cursor = 'crosshair';
-        
-        // Show instruction overlay
-        instructionOverlay.style.display = "block";
-    });
-
-    // Close modal when Cancel button is clicked
-    cancelMarkerBtn.addEventListener("click", function() {
-        modal.style.display = "none";
-        // Remove temporary marker if exists
-        if (tempMarker) {
-            map.removeLayer(tempMarker);
-            tempMarker = null;
-        }
-        // Disable map selection mode
-        addingMarker = false;
-        map.getContainer().style.cursor = '';
-    });
-
-    // Close modal when clicking outside of it
-    window.addEventListener("click", function(event) {
-        if (event.target === modal) {
-            modal.style.display = "none";
-            // Remove temporary marker if exists
-            if (tempMarker) {
-                map.removeLayer(tempMarker);
-                tempMarker = null;
-            }
-            // Disable map selection mode
-            addingMarker = false;
-            map.getContainer().style.cursor = '';
-        }
-    });
-
-    // Handle form submission
-    markerForm.addEventListener("submit", function(e) {
-        e.preventDefault();
-        
-        const name = document.getElementById("markerName").value;
-        const faculty = document.getElementById("markerFaculty").value;
-        
-        // Check if location was selected on map
-        if (!tempMarker) {
-            alert("Please select a location on the map first.");
-            return;
-        }
-        
-        // Add the new marker to the map with popup
-        const newMarker = L.marker([tempMarker.getLatLng().lat, tempMarker.getLatLng().lng]).addTo(map);
-        newMarker.bindPopup(`<strong>${name}</strong><br>Faculty: ${faculty}`);
-        newMarker.faculty = faculty;
-        
-        // Add to markers array
-        allMarkers.push(newMarker);
-        currentMarkers.push(newMarker);
-        
-        // Here you would typically send this data to your server
-        console.log("New marker added:", {
-            name: name,
-            faculty: faculty,
-            lat: tempMarker.getLatLng().lat,
-            lng: tempMarker.getLatLng().lng
+        // Add new markers
+        markers.forEach(m => {
+            m.addTo(map);
+            currentMarkers.push(m);
         });
-        
-        // Remove temporary marker
-        map.removeLayer(tempMarker);
-        tempMarker = null;
-        
-        // Close modal and reset form
-        modal.style.display = "none";
-        markerForm.reset();
-    });
+    }
+
+    // Initialize the map
+    fetchBuildings();
 
     // Fix map size issues when view changes
     function updateMapSize() {
@@ -846,7 +686,5 @@
     
     // Wait a moment after page load to ensure map renders correctly
     setTimeout(updateMapSize, 300);
-
-    fetchBuildings();
 </script>
 {% endblock %}
