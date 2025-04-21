@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, jsonify, request, send_from_directory, flash, redirect, url_for
 from flask_jwt_extended import jwt_required, current_user as jwt_current_user
+from App.models import *
 
 from.index import index_views
 
@@ -40,8 +41,8 @@ def create_user_endpoint():
 def static_user_page():
   return send_from_directory('static', 'static-user.html')
 
-@user_views.route('/add', methods=['POST'])
-@jwt_required()
+@user_views.route('/adamin/add', methods=['POST'])
+# @jwt_required()
 def add_marker():
     data = request.json
     if not data:
@@ -60,3 +61,9 @@ def add_marker():
         return jsonify({'message': 'Marker added successfully', 'marker': new_marker})
     except Exception as e:
         return jsonify({'message': 'Failed to add marker'})
+    
+@user_views.route('/admin', methods=['GET'])
+# @jwt_required()
+def admin_page():
+    markers = Marker.query.all()  # Get all markers from database
+    return render_template('admin.html', markers=markers)

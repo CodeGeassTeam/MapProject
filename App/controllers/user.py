@@ -30,34 +30,13 @@ def update_user(id, username):
         db.session.add(user)
         return db.session.commit()
     return None
-    
-# def create_marker(lat, lon, faculty, building_name, room_number, floor):
-#     # Try to get the building from the DB (create if it doesn't exist)
-#     building = Building.query.filter_by(name=building_name).first()
-#     if not building:
-#         # Create a new building if it doesn't exist (you might also want to link a location here)
-#         building = Building(name=building_name, faculty=faculty, location_id=1)  # Make sure location_id=1 exists
-#         db.session.add(building)
-#         db.session.commit()
 
-#     # Try to get the room (create if it doesn't exist)
-#     room = Room.query.filter_by(room_number=room_number, floor=floor, building_id=building.id).first()
-#     if not room:
-#         room = Room(room_number=room_number, floor=floor, building=building)
-#         db.session.add(room)
-#         db.session.commit()
-
-#     # Now create the marker with actual Building and Room objects
-#     new_marker = Marker(
-#         lat=lat,
-#         lon=lon,
-#         faculty=faculty,
-#         building=building,
-#         room=room
-#     )
-#     db.session.add(new_marker)
-#     db.session.commit()
-#     return new_marker
+# def login_user(username, password):
+#   user = User.query.filter_by(username=username).first()
+#   if user and user.check_password(password):
+#     token = create_access_token(identity=user)
+#     return token
+#   return None
 
 def create_marker(lat, lon, faculty, building_name, room_number, floor):
     try:
