@@ -4,134 +4,176 @@
 
 {{ super() }}
 
-
-
-
-
 {% block content %}
     
     {% if is_authenticated %}
         <p> Welcome {{current_user.username}} </p>
         <li><a href="/logout">Logout</a></li>
-    {%else%}
+    {% else %}
 
     <style>
+        :root {
+            --primary-bg: #060C18;
+            --card-bg: #e9e9e9;
+            --accent-color: #4c4582;
+            --accent-hover: #3a3463;
+            --text-dark: #333;
+            --text-light: #f5f5f5;
+        }
+        
+        body {
+            background-color: var(--primary-bg);
+            margin: 0;
+            font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        
+        .page-header {
+            display: flex;
+            justify-content: center;
+            padding: 2rem 2rem 0;
+        }
+        
+        .logo-container {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .logo-placeholder {
+            width: 120px;
+            height: 120px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+        }
+        
         .page-wrapper {
-            font-family: Arial, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #ffffff;
+            flex: 1;
+            padding: 0 2rem 2rem;
         }
         
         .login-container {
-            background-color: #e9e9e9;
-            padding: 40px;
-            border-radius: 10px;
-            width: 100%;
-            max-width: 450px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            background-color: var(--card-bg) !important;
+            padding: 2.5rem !important;
+            border-radius: 16px !important;
+            width: 100% !important;
+            max-width: 450px !important;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2) !important;
         }
+        
+        
         
         .login-container h1 {
-            margin-top: 0;
-            margin-bottom: 30px;
-            font-size: 2.2rem;
-            font-weight: bold;
+            margin: 0 0 2rem 0 !important;
+            font-size: 2rem !important;
+            font-weight: 700 !important;
+            color: var(--text-dark) !important;
+            text-align: center !important;
+            position: relative !important;
         }
         
+        
+        
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 1.5rem !important;
+            position: relative !important;
         }
         
         label {
-            display: block;
-            margin-bottom: 8px;
-            font-size: 1.2rem;
-            font-weight: 500;
+            display: block !important;
+            margin-bottom: 0.5rem !important;
+            font-size: 0.9rem !important;
+            font-weight: 500 !important;
+            color: var(--text-dark) !important;
         }
         
-        input[type="text"],
-        input[type="password"] {
-            width: 100%;
-            padding: 15px;
-            border-radius: 8px;
-            border: none;
-            box-sizing: border-box;
-            font-size: 1rem;
-        }
         
         .login-button {
             width: 100%;
-            padding: 15px;
-            background-color: #4c4582;
+            padding: 1rem;
+            background-color: var(--accent-color);
             color: white;
             border: none;
             border-radius: 8px;
             cursor: pointer;
-            font-size: 1.2rem;
-            margin-top: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+            letter-spacing: 0.5px;
         }
         
-        .login-button:hover {
-            background-color: #3a3463;
-        }
         
-        .admin-link {
-            text-align: center;
-            margin-top: 20px;
-            font-size: 0.9rem;
-        }
         
-        .admin-link a {
-            color: #000;
-            text-decoration: none;
-        }
         
-        .admin-link a:hover {
-            text-decoration: underline;
-        }
     </style>
         
-        <div class="page-wrapper">
-            <div class="login-container">
-                <h1>User Log in</h1>
-                <form method="POST" action="/login">
-                    <div class="form-group">
-                        <label for="username">Username</label>
-                        <input type="text" id="username" name="username">
-                    </div>
-                    <div class="form-group">
-                        <label for="password">Password</label>
-                        <input type="password" id="password" name="password">
-                    </div>
-                    <button type="submit" class="login-button">Log in</button>
-
-
-                    
-
-                    <!-- <div class="input-field" style="margin-right: 10px;">
-                        <input placeholder="username" value="bob" name="username" type="text" class="validate" required>
-                        <label for="username">username</label>
-                    </div>
-                    <div class="input-field" style="margin-right: 10px;">
-                        <input placeholder="password"value="bobpass" name="password" type="password" class="validate" required>
-                        <label for="password">Password</label>
-                    </div>
-                    <button type="submit" class="btn waves-effect waves-light">Login</button>
-                 -->
-
-
-
-
-
-                </form>
-                <div class="admin-link">
-                    <a href="/App/templates/admin/index.html">Admin? Log in here</a>
-                </div>
+    <div class="page-header">
+        <div class="logo-container">
+            <div class="logo-placeholder"><img src="{{ url_for('static', filename='assets/icon2.svg') }}" alt="" style="width:150px; padding-top: 20px;">
             </div>
         </div>
+    </div>
+    
+    <div class="page-wrapper">
+        <div class="login-container">
+            <h1>Welcome Back</h1>
+            <form method="POST" action="/login">
+                <div class="form-group" id="username-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" autocomplete="username" required>
+                </div>
+                <div class="form-group" id="password-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" autocomplete="current-password" required>
+                </div>
+                <button type="submit" class="login-button">Log In</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Add floating label effect
+        document.addEventListener('DOMContentLoaded', function() {
+            const usernameInput = document.getElementById('username');
+            const passwordInput = document.getElementById('password');
+            const usernameGroup = document.getElementById('username-group');
+            const passwordGroup = document.getElementById('password-group');
+            
+            usernameInput.addEventListener('focus', function() {
+                usernameGroup.classList.add('focused');
+            });
+            
+            usernameInput.addEventListener('blur', function() {
+                if (!usernameInput.value) {
+                    usernameGroup.classList.remove('focused');
+                }
+            });
+            
+            passwordInput.addEventListener('focus', function() {
+                passwordGroup.classList.add('focused');
+            });
+            
+            passwordInput.addEventListener('blur', function() {
+                if (!passwordInput.value) {
+                    passwordGroup.classList.remove('focused');
+                }
+            });
+            
+            // Check if inputs have values on page load (for autofill)
+            if (usernameInput.value) {
+                usernameGroup.classList.add('focused');
+            }
+            
+            if (passwordInput.value) {
+                passwordGroup.classList.add('focused');
+            }
+        });
+    </script>
     {% endif %}
-    {% endblock %}
+{% endblock %}
