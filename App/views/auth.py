@@ -25,7 +25,10 @@ def get_user_page():
 @jwt_required()
 def identify_page():
     return render_template('message.html', title="Identify", message=f"You are logged in as {current_user.id} - {current_user.username}")
-    
+
+@auth_views.route('/login', methods=['GET'])
+def get_login_page():
+    return render_template('index.html')
 
 @auth_views.route('/login', methods=['POST'])
 def login_action():
@@ -36,6 +39,7 @@ def login_action():
         flash('Bad username or password given'), 401
     else:
         flash('Login Successful')
+        response = redirect(url_for('index_views.index_page'))
         set_access_cookies(response, token) 
     return response
 
