@@ -6,76 +6,412 @@
 
 {% block content %}
 <style>
-    body, html {
+    /* Reset default styles */
+    * {
         margin: 0;
         padding: 0;
-        height: 100%;
-        width: 100%;
+        box-sizing: border-box;
+        font-family: Arial, sans-serif;
+        
     }
-    
-    .content {
+
+    /* Override any parent styles that might affect our layout */
+    #content {
+        padding: 0 !important;
+        margin: 0 !important;
+        max-width: none !important;
+        width: 100% !important;
+        
+    }
+
+    /* Main container */
+    .map-application {
+        display: flex;
+        width: 100%;
         height: 100vh;
-        width: 100vw;
+        overflow: hidden;
+        
+    }
+
+    /* Content area (left side with map) */
+    .content-area {
+        flex: 1;
         display: flex;
         flex-direction: column;
-    }
-    
-    .map-header {
-        padding: 10px;
-        background: #f8f9fa;
-        z-index: 1000;
-    }
-    
-    #map {
-        flex: 1;
-        width: 100%;
+        padding: 20px;
+        height: 100vh;
+        overflow: hidden;
+        background-color: #060C18 ;
     }
 
-    .map-footer {
-        padding: 5px;
-        background: #f8f9fa;
+    /* Sidebar (right side with profile) */
+    .sidebar {
+        width: 450px;
+        background-color: #0D172B;
+        padding: 20px;
+        height: 100vh;
+        overflow-y:hidden;
         text-align: center;
-        font-size: 0.8em;
+        
+    }
+
+    /* Header with menu and search */
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+   
+
+    /* Search bar */
+     .search-bar {
+        flex: 1;
+        margin: 0 20px;
+        max-width: 600px;
+        margin: 0;
+        background-color: #FFFFFF;
+        border-radius: 50px;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 12px 200px;
+        
+        font-weight: bold;
+        border: none;
+        text-align: center;
+        outline: none;
+    }
+
+    .search-input::placeholder {
+        color: rgba(94, 84, 84, 0.884); 
+        outline: none;
+    }
+
+    input[type="text"] {
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+        font-size: 25px !important;
+    }
+
+
+   
+    .map-container {
+        flex: 1;
+        position: relative;
+        display: flex; /* Add this */
+        justify-content: center;
+        align-items: center; /* Add this */
+        overflow: hidden;
+    }
+
+
+    .map-Filter{
+        position: relative;
+        display: flex; /* Add this */
+        justify-content: center;
+        align-items: center; 
+    }
+
+    #map {
+        width: 75%;
+        height: 75%;
+    }
+
+    /* Welcome text in sidebar */
+    .welcome-text {
+        font-size: 32px;
+        font-weight: bold;
+        margin-bottom: 40px;
+    }
+
+    /* Profile card */
+    .profile-card {
+        background-color: #192F61;
+        padding: 20px;
+        text-align: center;
+        margin-bottom: 20px;
+        border-radius: 20px;
+    }
+
+    .profile-image-placeholder {
+        font-size: 50px;
+        margin-bottom: 20px;
+    }
+
+    /* Details section */
+    .details-section {
+        background-color: #192F61;
+        padding: 20px;
+    }
+
+    .detail-item {
+        color: white;
+        margin-bottom: 15px;
+        font-size: 20px;
+        font-style: bold;
+    }
+
+    /* Add marker button */
+    .add-marker-btn {
+        background-color: #DBE3F6;
+        color: rgb(0, 0, 0);
+        border-radius: 50px;
+        border: none;
+        padding: 12px;
+        width: 100%;
+        margin-top: 25px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: bold;
+    }
+
+    /* Leaflet control adjustments */
+    .leaflet-top, .leaflet-bottom {
         z-index: 1000;
     }
+
+
+    .button {
+        background-color: #060C18:
+        border: none;
+        color: white;
+        padding: 16px 32px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 4px 2px;
+        transition-duration: 0.1s;
+        cursor: pointer;
+    }
+
+    .button1 {
+        background-color: #060C18; 
+        color: rgb(255, 255, 255); 
+        border: 2px solid red;
+        border-radius: 20px;
+    }
+
+    .button1:hover {
+        border-radius: 0px ;
+        font-weight: bold;
+        color: white;
+    }
+
+    .select-wrapper{
+        background-color: #DBE3F6;
+        display: block;
+        width: 360px;
+        text-align: center;   
+
+    }
+
+    .select-wrapper input.select-dropdown{
+        text-align: center;
+        color: rgb(0, 0, 0);
+        font-size: 25px !important;
+    }
+
+
+    
+
 </style>
 
-    <h1>UWI Map</h1>
-    {% if is_authenticated %}
-        <p>Welcome {{current_user.username}}</p>
-    {% endif %}
+<!-- Main application container -->
+<div class="map-application">
+    <!-- Left content area with map -->
+    <div class="content-area">
+        <div class="header">
+            
+            <div class="search-bar">
+                <input type="text" class="search-input" placeholder="Search" >
+            </div>
+            <div>
+                <button class="button button1">Logout</button>
+            </div>
+        </div>
+        <div class="map-container">
+            <div id="map"></div>
+        </div>
+        <div class="map-Filter">
+            <label for="facultyFilter" style="padding-right: 20px;">Select Faculty:</label>
+                <select id="facultyFilter" onchange="filterByFaculty(this.value)">
+                    <option value="">-- All Faculties --</option>
+                    <option value="Engineering">Engineering</option>
+                    <option value="Science & Technology">Science & Tech</option>
+                    <option value="Humanities & Education">Humanities & Education</option>
+                    <option value="Law">Law</option>
+                    <option value="Agriculture"> Agriculture </option>
+                    <option value="Humanities & Education">Humanities & Education</option>
+                </select>
+        </div>
+    </div>
     
-    <div id="map" style="width: 100%; height: 600px; margin: 20px 0; border: 1px solid #ccc;"></div>
-    
-    <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    
-    <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    
-    <script>
-        // Initialize the map centered on UWI St. Augustine
-        const map = L.map('map').setView([10.640559, -61.399576], 16);  // Zoom level 19 for close view
-        
-        // Add OpenStreetMap tiles
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-            maxZoom: 19
-        }).addTo(map);
-        
-        // Add a marker for UWI (more markers can be added similarly) (information can be added to .bindPopup)
-        const uwiMarker = L.marker([10.640559, -61.399576]).addTo(map)
-            .bindPopup('<b>UWI St. Augustine</b><br>University of the West Indies')
-            .openPopup();
-        
-        // Optional: Add a circle to highlight the area
-        // L.circle([10.640559, -61.399576], {
-        //     color: 'blue',
-        //     fillColor: '#30f',
-        //     fillOpacity: 0.2,
-        //     radius: 100  // 100 meters radius
-        // }).addTo(map).bindPopup("UWI Campus Area");
-    </script>
-    
-    <p>This map shows the University of the West Indies St. Augustine campus.</p>
+    <!-- Right sidebar with profile -->
+    <div class="sidebar">
+        <div class="welcome-text">
+            <img src="{{ url_for('static', filename='assets/icon2.svg') }}" alt="" style="width:150px; padding-top: 20px;">
+            <h1 style="margin-top: 0px; font-size: 50px; font-weight: bold; color: #DBE3F6;">NavUWI</h1>
+        </div>
+        <div class="profile-card">
+            <div class="profile-image-placeholder"><img src="https://live.staticflickr.com/7186/6951106294_3fbc6665f6_k.jpg" alt="" style="width: 100%; align-items: center; border-radius: 20px;">
+        </div>
+        <div class="details-section">
+            <div class="detail-item"><h4 style="font-weight: bold;">Detail name:</h4> LRC Greens</div>
+            <button class="add-marker-btn">Add marker</button>
+        </div>
+    </div>
+</div>
+
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+    const map = L.map('map').setView([10.640559, -61.399576], 16);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 19
+    }).addTo(map);
+
+    let allMarkers = [];
+    let currentMarkers = [];
+
+    async function fetchBuildings() {
+        const bbox = '10.636,-61.404,10.645,-61.395';
+        const query = `
+            [out:json][timeout:25];
+            (
+              way["building"](${bbox});
+              relation["building"](${bbox});
+            );
+            out center tags;
+        `;
+
+        const url = 'https://overpass-api.de/api/interpreter?data=' + encodeURIComponent(query);
+
+        try {
+            const response = await fetch(url);
+            const data = await response.json();
+            processBuildings(data.elements);
+        } catch (err) {
+            console.error("Error fetching building data:", err);
+        }
+    }
+
+    function processBuildings(elements) {
+        elements.forEach(el => {
+            const tags = el.tags || {};
+            const name = tags.name || '';
+            const faculty = tags.faculty || extractFacultyFromName(name);
+            const lat = el.center?.lat;
+            const lon = el.center?.lon;
+
+            if (!lat || !lon) return;
+
+            const marker = L.marker([lat, lon]).bindPopup(generatePopupContent(tags));
+            marker.faculty = faculty;
+            allMarkers.push(marker);
+        });
+
+        displayMarkers(allMarkers);
+    }
+
+    function extractFacultyFromName(name) {
+        const faculties = [
+            "Engineering", "Science & Technology", "Humanities & Education",
+            "Law", "Medical Sciences", "Social Sciences", "Food & Agriculture", "Sport"
+        ];
+
+        for (let fac of faculties) {
+            const pattern = new RegExp(fac, 'i');
+            if (pattern.test(name)) return fac;
+        }
+        return null;
+    }
+
+    function generatePopupContent(tags) {
+        let content = '<strong>Building Info</strong><br><ul>';
+        for (let key in tags) {
+            content += `<li><strong>${key}</strong>: ${tags[key]}</li>`;
+        }
+        content += '</ul>';
+        return content;
+    }
+
+    function displayMarkers(markers) {
+        currentMarkers.forEach(m => map.removeLayer(m));
+        currentMarkers = markers;
+        currentMarkers.forEach(m => m.addTo(map));
+    }
+
+    function filterByFaculty(selected) {
+        if (!selected) {
+            displayMarkers(allMarkers);
+        } else {
+            const filtered = allMarkers.filter(marker => marker.faculty === selected);
+            displayMarkers(filtered);
+        }
+    }
+
+    function toggleAmenities() {
+        alert("Amenity toggle functionality can be implemented separately if needed.");
+    }
+
+    map.on('click', async function (e) {
+        const lat = e.latlng.lat;
+        const lon = e.latlng.lng;
+        const delta = 0.0001;
+        const bbox = `${lat - delta},${lon - delta},${lat + delta},${lon + delta}`;
+
+        const query = `
+            [out:json][timeout:25];
+            (
+              node(${bbox});
+              way(${bbox});
+              relation(${bbox});
+            );
+            out center tags;
+        `;
+
+        const url = 'https://overpass-api.de/api/interpreter?data=' + encodeURIComponent(query);
+
+        try {
+            const response = await fetch(url);
+            const data = await response.json();
+
+            if (data.elements.length > 0) {
+                const closest = data.elements[0];
+                const tags = closest.tags || {};
+                const center = closest.center || { lat: closest.lat, lon: closest.lon };
+
+                let info = "<h4>Place Details</h4><ul>";
+                for (let key in tags) {
+                    info += `<li><strong>${key}</strong>: ${tags[key]}</li>`;
+                }
+                info += "</ul>";
+
+                L.popup()
+                    .setLatLng([center.lat, center.lon])
+                    .setContent(info)
+                    .openOn(map);
+            } else {
+                L.popup()
+                    .setLatLng([lat, lon])
+                    .setContent("No map data found at this location.")
+                    .openOn(map);
+            }
+        } catch (error) {
+            console.error("Error fetching data from Overpass:", error);
+        }
+    });
+
+    fetchBuildings();
+</script>
 {% endblock %}
