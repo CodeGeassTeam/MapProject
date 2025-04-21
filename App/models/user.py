@@ -68,12 +68,6 @@ class Marker(db.Model):
     building = db.relationship('Building', backref='markers')
     room = db.relationship('Room', backref='markers')
 
-    def add_marker(self, lat, lon, faculty, building=None, room=None, image=None):
-        new_marker = Marker(lat=lat, lon=lon, faculty=faculty, building=building, room=room, image=image)
-        db.session.add(new_marker)
-        db.session.commit()
-        return new_marker
-
     def get_json(self):
         return {
             'id': self.id,
