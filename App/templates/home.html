@@ -6,13 +6,19 @@
 
 {% block content %}
 <style>
+    /* Import Google Fonts */
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap');
+
     /* Reset default styles */
     * {
         margin: 0;
         padding: 0;
         box-sizing: border-box;
-        font-family: Arial, sans-serif;
-        
+        font-family: 'Poppins', Arial, sans-serif;
+    }
+
+    h1, h2, h3, h4, h5, h6, .welcome-text {
+        font-family: 'Oswald', sans-serif;
     }
 
     /* Override any parent styles that might affect our layout */
@@ -21,16 +27,15 @@
         margin: 0 !important;
         max-width: none !important;
         width: 100% !important;
-        
     }
 
     /* Main container */
     .map-application {
         display: flex;
+        flex-direction: row;
         width: 100%;
         height: 100vh;
         overflow: hidden;
-        
     }
 
     /* Content area (left side with map) */
@@ -41,7 +46,7 @@
         padding: 20px;
         height: 100vh;
         overflow: hidden;
-        background-color: #060C18 ;
+        background-color: #060C18;
     }
 
     /* Sidebar (right side with profile) */
@@ -50,9 +55,8 @@
         background-color: #0D172B;
         padding: 20px;
         height: 100vh;
-        overflow-y:auto;
+        overflow-y: auto;
         text-align: center;
-        
     }
 
     /* Header with menu and search */
@@ -63,30 +67,28 @@
         margin-bottom: 20px;
     }
 
-   
-
     /* Search bar */
-     .search-bar {
+    .search-bar {
         flex: 1;
-        margin: 0 20px;
-        max-width: 600px;
         margin: 0;
         background-color: #FFFFFF;
         border-radius: 50px;
+        max-width: 600px;
     }
 
     .search-input {
         width: 100%;
-        padding: 12px 200px;
-        
-        font-weight: bold;
+        padding: 12px 20px;
+        font-weight: 500;
         border: none;
         text-align: center;
         outline: none;
+        font-size: 16px;
+        font-family: 'Poppins', sans-serif;
     }
 
     .search-input::placeholder {
-        color: rgba(94, 84, 84, 0.884); 
+        color: rgba(94, 84, 84, 0.884);
         outline: none;
     }
 
@@ -94,38 +96,38 @@
         border: none !important;
         outline: none !important;
         box-shadow: none !important;
-        font-size: 25px !important;
+        font-size: 18px !important;
+        font-family: 'Poppins', sans-serif;
     }
 
-
-   
     .map-container {
         flex: 1;
         position: relative;
-        display: flex; /* Add this */
+        display: flex;
         justify-content: center;
-        align-items: center; /* Add this */
+        align-items: center;
         overflow: hidden;
     }
 
-
-    .map-Filter{
+    .map-Filter {
         position: relative;
-        display: flex; /* Add this */
+        display: flex;
         justify-content: center;
-        align-items: center; 
+        align-items: center;
+        flex-wrap: wrap;
+        margin-top: 10px;
     }
 
     #map {
-        width: 80%;
-        height: 80%;
+        width: 100%;
+        height: 100%;
     }
 
     /* Welcome text in sidebar */
     .welcome-text {
         font-size: 32px;
         font-weight: bold;
-        margin-bottom: 40px;
+        margin-bottom: 20px;
     }
 
     /* Profile card */
@@ -137,15 +139,11 @@
         border-radius: 20px;
     }
 
-    .profile-image-placeholder {
-        font-size: 50px;
-        margin-bottom: 20px;
-    }
-
     /* Details section */
     .details-section {
         background-color: #192F61;
         padding: 20px;
+        border-radius: 20px;
     }
 
     .detail-item {
@@ -166,7 +164,8 @@
         margin-top: 25px;
         cursor: pointer;
         font-size: 16px;
-        font-weight: bold;
+        font-weight: 600;
+        font-family: 'Poppins', sans-serif;
     }
 
     /* Leaflet control adjustments */
@@ -174,12 +173,11 @@
         z-index: 1000;
     }
 
-
     .button {
-        background-color: #060C18:
+        background-color: #060C18;
         border: none;
         color: white;
-        padding: 16px 32px;
+        padding: 10px 20px;
         text-align: center;
         text-decoration: none;
         display: inline-block;
@@ -187,39 +185,194 @@
         margin: 4px 2px;
         transition-duration: 0.1s;
         cursor: pointer;
+        font-family: 'Poppins', sans-serif;
     }
 
     .button1 {
         background-color: #060C18; 
         color: rgb(255, 255, 255); 
-        border: 2px solid red;
+        border: 2px solid #192F61;
         border-radius: 20px;
     }
 
     .button1:hover {
-        border-radius: 0px ;
+        border-radius: 0px;
         font-weight: bold;
         color: white;
     }
 
-    .select-wrapper{
+    .select-wrapper {
         background-color: #192F61;
         display: block;
-        width: 360px;
+        width: 100%;
+        max-width: 360px;
         text-align: center;  
         border-radius: 20px; 
-
+        margin: 0 auto;
     }
 
-    .select-wrapper input.select-dropdown{
+    .select-wrapper input.select-dropdown {
         text-align: center;
         color: rgb(255, 255, 255);
-        font-size: 25px !important;
+        font-size: 18px !important;
     }
 
+    /* Selector styling */
+    select {
+        font-family: 'Poppins', sans-serif;
+        padding: 8px 12px;
+        border-radius: 10px;
+        border: none;
+        background-color: #192F61;
+        color: white;
+        margin-left: 8px;
+    }
 
-    
+    /* Labels for selectors */
+    label h5 {
+        color: #DBE3F6;
+        display: inline-block;
+        margin-right: 5px;
+        font-family: 'Oswald', sans-serif;
+        font-weight: 500;
+    }
 
+    /* Mobile menu toggle button */
+    .menu-toggle {
+        display: none;
+        background: none;
+        border: none;
+        color: white;
+        font-size: 24px;
+        cursor: pointer;
+    }
+
+    /* Popup styling */
+    .leaflet-popup-content {
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .leaflet-popup-content h4 {
+        font-family: 'Oswald', sans-serif;
+        margin-bottom: 8px;
+    }
+
+    /* Media Queries for Responsive Design */
+    @media screen and (max-width: 1024px) {
+        .search-input {
+            padding: 10px 15px;
+        }
+        
+        .sidebar {
+            width: 350px;
+        }
+    }
+
+    @media screen and (max-width: 768px) {
+        .map-application {
+            flex-direction: column;
+        }
+        
+        .content-area {
+            height: 60vh;
+            padding: 10px;
+        }
+        
+        .sidebar {
+            width: 100%;
+            height: 40vh;
+        }
+        
+        .welcome-text {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        
+        .welcome-text h1 {
+            font-size: 30px !important;
+        }
+        
+        .welcome-text img {
+            width: 80px !important;
+        }
+        
+        .profile-card {
+            padding: 10px;
+        }
+        
+        .details-section {
+            padding: 10px;
+        }
+        
+        .detail-item {
+            font-size: 16px;
+        }
+    }
+
+    @media screen and (max-width: 576px) {
+        .header {
+            flex-wrap: wrap;
+        }
+        
+        .search-bar {
+            order: 2;
+            width: 100%;
+            margin: 10px 0;
+        }
+        
+        .map-Filter {
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .map-Filter label {
+            padding-right: 0 !important;
+        }
+        
+        .content-area {
+            height: 70vh;
+        }
+        
+        .sidebar {
+            height: 30vh;
+        }
+        
+        .button {
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+        
+        input[type="text"] {
+            font-size: 16px !important;
+        }
+        
+        .profile-image-placeholder img {
+            max-height: 200px;
+        }
+    }
+
+    /* For smaller phones */
+    @media screen and (max-width: 400px) {
+        .content-area {
+            padding: 8px;
+        }
+        
+        .sidebar {
+            padding: 10px;
+        }
+        
+        .search-input {
+            padding: 8px 10px;
+        }
+        
+        .welcome-text img {
+            width: 60px !important;
+        }
+        
+        .welcome-text h1 {
+            font-size: 24px !important;
+        }
+    }
 </style>
 
 <!-- Main application container -->
@@ -227,15 +380,16 @@
     <!-- Left content area with map -->
     <div class="content-area">
         <div class="header">
-            
             <div class="search-bar">
-                <input type="text" class="search-input" placeholder="Search" >
+                <input type="text" class="search-input" placeholder="Search">
             </div>
             <div>
                 {% if is_authenticated %}
+                    <p style="display: inline; font-size: 15px; color: #DBE3F6;margin-left: 10px;margin-right: 2px; font-family: 'Poppins', sans-serif;font-weight: bold;">ADMIN(bob)</p>
                     <button class="button button1">Logout</button>
                 {%else%}
-                    <button  class="button button1">Login</button>
+                    <p style="display: inline; font-size: 15px; color: #DBE3F6;margin-left: 10px;margin-right: 2px; font-family: 'Poppins', sans-serif;font-weight: bold;">ADMIN(bob)</p>
+                    <button class="button button1">Login</button>
                 {% endif %}
             </div>
         </div>
@@ -243,16 +397,18 @@
             <div id="map"></div>
         </div>
         <div class="map-Filter">
-            <label for="facultyFilter" style="padding-right: 20px;"><h5>Select Faculty:</h3></label>
-                <select id="facultyFilter" onchange="filterByFaculty(this.value)">
-                    <option value="">-- All Faculties --</option>
-                    <option value="Engineering">Engineering</option>
-                    <option value="Science & Technology">Science & Tech</option>
-                    <option value="Humanities & Education">Humanities & Education</option>
-                    <option value="Law">Law</option>
-                    <option value="Agriculture"> Agriculture </option>
-                    <option value="Humanities & Education">Humanities & Education</option>
-                </select>
+            <label for="facultyFilter"><h5>Select Faculty:</h5></label>
+            <select id="facultyFilter" onchange="filterByFaculty(this.value)">
+                <option value="">-- All Faculties --</option>
+                <option value="Engineering">Engineering</option>
+                <option value="Science & Technology">Science & Tech</option>
+                <option value="Humanities & Education">Humanities & Education</option>
+                <option value="Law">Law</option>
+                <option value="Agriculture">Agriculture</option>
+                <option value="Medical Sciences">Medical Sciences</option>
+                <option value="Social Sciences">Social Sciences</option>
+                <option value="Sport">Sport</option>
+            </select>
         </div>
     </div>
     
@@ -260,13 +416,16 @@
     <div class="sidebar">
         <div class="welcome-text">
             <img src="{{ url_for('static', filename='assets/icon2.svg') }}" alt="" style="width:150px; padding-top: 20px;">
-            <h1 style="margin-top: 0px; font-size: 50px; font-weight: bold; color: #DBE3F6;">NavUWI</h1>
+            <h1 style="margin-top: 0px; font-size: 50px; font-weight: 700; color: #DBE3F6;">NavUWI</h1>
         </div>
         <div class="profile-card">
-            <div class="profile-image-placeholder"><img src="https://live.staticflickr.com/7186/6951106294_3fbc6665f6_k.jpg" alt="" style="width: 100%; align-items: center; border-radius: 20px;">
+            <div class="profile-image-placeholder">
+                <img src="https://live.staticflickr.com/7186/6951106294_3fbc6665f6_k.jpg" alt="" 
+                    style="width: 100%; max-width: 100%; height: auto; object-fit: cover; border-radius: 20px;">
+            </div>
         </div>
         <div class="details-section">
-            <div class="detail-item"><h4 style="font-weight: bold;">Detail name:</h4> LRC Greens</div>
+            <div class="detail-item"><h5 style="font-weight: 600;font-family: 'Poppins', sans-serif;">Detail name:</h5> LRC Greens</div>
             <button class="add-marker-btn">Add marker</button>
         </div>
     </div>
@@ -342,7 +501,7 @@
     }
 
     function generatePopupContent(tags) {
-        let content = '<strong>Building Info</strong><br><ul>';
+        let content = '<h4>Building Info</h4><ul>';
         for (let key in tags) {
             content += `<li><strong>${key}</strong>: ${tags[key]}</li>`;
         }
@@ -363,10 +522,6 @@
             const filtered = allMarkers.filter(marker => marker.faculty === selected);
             displayMarkers(filtered);
         }
-    }
-
-    function toggleAmenities() {
-        alert("Amenity toggle functionality can be implemented separately if needed.");
     }
 
     map.on('click', async function (e) {
@@ -416,6 +571,17 @@
             console.error("Error fetching data from Overpass:", error);
         }
     });
+
+    // Fix map size issues when view changes
+    function updateMapSize() {
+        map.invalidateSize();
+    }
+
+    // Update map size when window is resized
+    window.addEventListener('resize', updateMapSize);
+    
+    // Wait a moment after page load to ensure map renders correctly
+    setTimeout(updateMapSize, 300);
 
     fetchBuildings();
 </script>
