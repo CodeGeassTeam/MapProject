@@ -7,7 +7,8 @@ from App.controllers import (
     create_user,
     get_all_users,
     get_all_users_json,
-    jwt_required
+    jwt_required,
+    create_marker
 )
 
 user_views = Blueprint('user_views', __name__, template_folder='../templates')
@@ -38,3 +39,24 @@ def create_user_endpoint():
 @user_views.route('/static/users', methods=['GET'])
 def static_user_page():
   return send_from_directory('static', 'static-user.html')
+
+@user_views.route('/add', methods=['POST'])
+@jwt_required()
+def add_marker():
+    data = request.json
+    if not data:
+        return jsonify({'message': 'No data provided'})
+
+    try:
+        new_marker = create_marker(
+            lat=data['lat'],
+            lon=data['lon'],
+            faculty=data['faculty'],
+            building=data['building'],
+            room=data['room'],
+            floor=data['floor'],
+            user_id=jwt_current_user.id
+        )
+        return jsonify({'message': 'Marker added successfully', 'marker': new_marker})
+    except Exception as e:
+        return jsonify({'message': 'Failed to add marker'})

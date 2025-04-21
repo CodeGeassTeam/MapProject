@@ -69,8 +69,18 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
+<label for="facultyFilter">Select Faculty:</label>
+<select id="facultyFilter" onchange="filterByFaculty(this.value)">
+    <option value="">-- All Faculties --</option>
+    <option value="Engineering">Engineering</option>
+    <option value="Science & Technology">Science & Tech</option>
+    <option value="Humanities & Education">Humanities & Education</option>
+    <option value="Law">Law</option>
+    <option value="Agriculture"> Agriculture </option>
+    <option value="Humanities & Education">Humanities & Education</option>
+</select>
+
 <script>
- 
     const map = L.map('map').setView([10.640559, -61.399576], 16);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -78,58 +88,140 @@
         maxZoom: 19
     }).addTo(map);
 
-    // Remove any amenity filter – just general info about clicked objects
-    map.on('click', async function (e) {
-    const lat = e.latlng.lat;
-    const lon = e.latlng.lng;
-    const delta = 0.0001; // Tiny offset for BBox (~11m)
+    let allMarkers = [];
+    let currentMarkers = [];
 
-    const bbox = `${lat - delta},${lon - delta},${lat + delta},${lon + delta}`;
-
-    const query = `
-        [out:json][timeout:25];
-        (
-        node(${bbox});
-        way(${bbox});
-        relation(${bbox});
-        );
-        out center tags;
+    async function fetchBuildings() {
+        const bbox = '10.636,-61.404,10.645,-61.395';
+        const query = `
+            [out:json][timeout:25];
+            (
+              way["building"](${bbox});
+              relation["building"](${bbox});
+            );
+            out center tags;
         `;
 
-    const url = 'https://overpass-api.de/api/interpreter?data=' + encodeURIComponent(query);
+        const url = 'https://overpass-api.de/api/interpreter?data=' + encodeURIComponent(query);
 
-    try {
-        const response = await fetch(url);
-        const data = await response.json();
-
-        if (data.elements.length > 0) {
-            const closest = data.elements[0];
-            const tags = closest.tags || {};
-            const center = closest.center || { lat: closest.lat, lon: closest.lon };
-
-            let info = "<h4>Place Details</h4><ul>";
-            for (let key in tags) {
-                info += `<li><strong>${key}</strong>: ${tags[key]}</li>`;
-            }
-            info += "</ul>";
-
-            L.popup()
-                .setLatLng([center.lat, center.lon])
-                .setContent(info)
-                .openOn(map);
-        } else {
-            L.popup()
-                .setLatLng([lat, lon])
-                .setContent("No map data found at this location.")
-                .openOn(map);
+        try {
+            const response = await fetch(url);
+            const data = await response.json();
+            processBuildings(data.elements);
+        } catch (err) {
+            console.error("Error fetching building data:", err);
         }
-    } catch (error) {
-        console.error("Error fetching data from Overpass:", error);
     }
-});
 
+    function processBuildings(elements) {
+        elements.forEach(el => {
+            const tags = el.tags || {};
+            const name = tags.name || '';
+            const faculty = tags.faculty || extractFacultyFromName(name);
+            const lat = el.center?.lat;
+            const lon = el.center?.lon;
+
+            if (!lat || !lon) return;
+
+            const marker = L.marker([lat, lon]).bindPopup(generatePopupContent(tags));
+            marker.faculty = faculty;
+            allMarkers.push(marker);
+        });
+
+        displayMarkers(allMarkers);
+    }
+
+    function extractFacultyFromName(name) {
+        const faculties = [
+            "Engineering", "Science & Technology", "Humanities & Education",
+            "Law", "Medical Sciences", "Social Sciences", "Food & Agriculture", "Sport"
+        ];
+
+        for (let fac of faculties) {
+            const pattern = new RegExp(fac, 'i');
+            if (pattern.test(name)) return fac;
+        }
+        return null;
+    }
+
+    function generatePopupContent(tags) {
+        let content = '<strong>Building Info</strong><br><ul>';
+        for (let key in tags) {
+            content += `<li><strong>${key}</strong>: ${tags[key]}</li>`;
+        }
+        content += '</ul>';
+        return content;
+    }
+
+    function displayMarkers(markers) {
+        currentMarkers.forEach(m => map.removeLayer(m));
+        currentMarkers = markers;
+        currentMarkers.forEach(m => m.addTo(map));
+    }
+
+    function filterByFaculty(selected) {
+        if (!selected) {
+            displayMarkers(allMarkers);
+        } else {
+            const filtered = allMarkers.filter(marker => marker.faculty === selected);
+            displayMarkers(filtered);
+        }
+    }
+
+    function toggleAmenities() {
+        alert("Amenity toggle functionality can be implemented separately if needed.");
+    }
+
+    map.on('click', async function (e) {
+        const lat = e.latlng.lat;
+        const lon = e.latlng.lng;
+        const delta = 0.0001;
+        const bbox = `${lat - delta},${lon - delta},${lat + delta},${lon + delta}`;
+
+        const query = `
+            [out:json][timeout:25];
+            (
+              node(${bbox});
+              way(${bbox});
+              relation(${bbox});
+            );
+            out center tags;
+        `;
+
+        const url = 'https://overpass-api.de/api/interpreter?data=' + encodeURIComponent(query);
+
+        try {
+            const response = await fetch(url);
+            const data = await response.json();
+
+            if (data.elements.length > 0) {
+                const closest = data.elements[0];
+                const tags = closest.tags || {};
+                const center = closest.center || { lat: closest.lat, lon: closest.lon };
+
+                let info = "<h4>Place Details</h4><ul>";
+                for (let key in tags) {
+                    info += `<li><strong>${key}</strong>: ${tags[key]}</li>`;
+                }
+                info += "</ul>";
+
+                L.popup()
+                    .setLatLng([center.lat, center.lon])
+                    .setContent(info)
+                    .openOn(map);
+            } else {
+                L.popup()
+                    .setLatLng([lat, lon])
+                    .setContent("No map data found at this location.")
+                    .openOn(map);
+            }
+        } catch (error) {
+            console.error("Error fetching data from Overpass:", error);
+        }
+    });
+
+    fetchBuildings();
 </script>
-
 
 <p>This map shows the University of the West Indies St. Augustine campus.</p>
 {% endblock %}

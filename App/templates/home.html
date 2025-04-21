@@ -386,10 +386,20 @@
             <div>
                 {% if is_authenticated %}
                     <p style="display: inline; font-size: 15px; color: #DBE3F6;margin-left: 10px;margin-right: 2px; font-family: 'Poppins', sans-serif;font-weight: bold;">ADMIN(bob)</p>
+
+                <a href="{{ url_for('auth_views.logout_action') }}">
+
                     <button class="button button1">Logout</button>
+                </a>
                 {%else%}
+
                     <p style="display: inline; font-size: 15px; color: #DBE3F6;margin-left: 10px;margin-right: 2px; font-family: 'Poppins', sans-serif;font-weight: bold;">ADMIN(bob)</p>
-                    <button class="button button1">Login</button>
+                    
+
+                    <a href="{{ url_for('auth_views.get_login_page') }}">
+                        <button class="button button1">Login</button>
+                    </a>
+
                 {% endif %}
             </div>
         </div>
@@ -446,6 +456,12 @@
 
     let allMarkers = [];
     let currentMarkers = [];
+
+    
+    {% for marker in markers %}
+        const marker = L.marker([{{ marker.lat }}, {{ marker.lon }}]).addTo(map);
+        marker.bindPopup("<strong>{{ marker.room }}</strong><br>{{ marker.building }}");
+    {% endfor %}
 
     async function fetchBuildings() {
         const bbox = '10.636,-61.404,10.645,-61.395';

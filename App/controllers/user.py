@@ -1,4 +1,4 @@
-from App.models import User
+from App.models import User, Marker
 from App.database import db
 
 def create_user(username, password):
@@ -31,3 +31,15 @@ def update_user(id, username):
         return db.session.commit()
     return None
     
+def create_marker(lat, lon, faculty, building, room, floor):
+    new_marker = Marker(
+        lat=lat,
+        lon=lon,
+        faculty=faculty,
+        building=building,
+        room=room,
+        floor=floor
+    )
+    db.session.add(new_marker)
+    db.session.commit()
+    return new_marker
