@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, jsonify, request, flash, send_from_directory, flash, redirect, url_for
 from flask_jwt_extended import jwt_required, current_user, unset_jwt_cookies, set_access_cookies
-
+from App.models import db,  Marker
 
 from.index import index_views
 
@@ -28,7 +28,7 @@ def identify_page():
 
 @auth_views.route('/login', methods=['GET'])
 def get_login_page():
-    return render_template('index.html')
+    return render_template('login.html')
 
 @auth_views.route('/login', methods=['POST'])
 def login_action():
@@ -39,7 +39,7 @@ def login_action():
         flash('Bad username or password given'), 401
     else:
         flash('Login Successful')
-        response = redirect(url_for('index_views.index_page'))
+        response = redirect(url_for('user_views.admin_page'))
         set_access_cookies(response, token) 
     return response
 
@@ -48,6 +48,7 @@ def logout_action():
     response = redirect(request.referrer) 
     flash("Logged Out!")
     unset_jwt_cookies(response)
+    # response = redirect(url_for('index_views.index_page'))
     return response
 
 '''
