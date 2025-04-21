@@ -1,6 +1,7 @@
 {% extends "layout.html" %}
 {% block title %}NavUWI{% endblock %}
 {% block page %}NavUWI{% endblock %}
+
 {{ super() }}
 
 {% block content %}
@@ -256,102 +257,6 @@
         margin-bottom: 8px;
     }
 
-    /* Modal Popup Styles */
-    .modal {
-        display: none;
-        position: fixed;
-        z-index: 2000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        overflow: auto;
-        background-color: rgba(0, 0, 0, 0.7);
-    }
-
-    .modal-content {
-        background-color: #192F61;
-        margin: 15% auto;
-        padding: 30px;
-        border-radius: 20px;
-        width: 80%;
-        max-width: 500px;
-        color: white;
-        font-family: 'Poppins', sans-serif;
-    }
-
-    .modal h2 {
-        font-family: 'Oswald', sans-serif;
-        margin-bottom: 20px;
-        color: #DBE3F6;
-        text-align: center;
-    }
-
-    .form-group {
-        margin-bottom: 20px;
-    }
-
-    .form-group label {
-        display: block;
-        margin-bottom: 8px;
-        font-weight: 500;
-    }
-
-    .form-group input, .form-group select {
-        width: 100%;
-        padding: 12px;
-        border-radius: 10px;
-        border: none;
-        background-color: #254380;
-        color: white;
-        font-family: 'Poppins', sans-serif;
-    }
-
-    .form-group input::placeholder {
-        color: rgba(255, 255, 255, 0.7);
-    }
-
-    .form-buttons {
-        display: flex;
-        justify-content: space-between;
-        margin-top: 30px;
-    }
-
-    .form-buttons button {
-        padding: 12px 25px;
-        border-radius: 50px;
-        border: none;
-        font-weight: 600;
-        cursor: pointer;
-        font-family: 'Poppins', sans-serif;
-    }
-
-    .cancel-btn {
-        background-color: #3A5894;
-        color: white;
-    }
-
-    .submit-btn {
-        background-color: #DBE3F6;
-        color: #0D172B;
-    }
-
-    /* Instruction overlay */
-    .instruction-overlay {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background-color: rgba(25, 47, 97, 0.9);
-        color: white;
-        padding: 15px 25px;
-        border-radius: 10px;
-        text-align: center;
-        z-index: 1500;
-        pointer-events: none;
-        transition: opacity 0.3s;
-    }
-
     /* Media Queries for Responsive Design */
     @media screen and (max-width: 1024px) {
         .search-input {
@@ -402,11 +307,6 @@
         .detail-item {
             font-size: 16px;
         }
-
-        .modal-content {
-            width: 90%;
-            margin: 30% auto;
-        }
     }
 
     @media screen and (max-width: 576px) {
@@ -449,15 +349,6 @@
         .profile-image-placeholder img {
             max-height: 200px;
         }
-
-        .form-buttons {
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .form-buttons button {
-            width: 100%;
-        }
     }
 
     /* For smaller phones */
@@ -489,7 +380,9 @@
     <!-- Left content area with map -->
     <div class="content-area">
         <div class="header">
-            
+            <div class="search-bar">
+                <input type="text" class="search-input" placeholder="Search">
+            </div>
             <div>
                 {% if is_authenticated %}
                     <p style="display: inline; font-size: 15px; color: #DBE3F6;margin-left: 10px;margin-right: 2px; font-family: 'Poppins', sans-serif;font-weight: bold;">ADMIN(bob)</p>
@@ -512,10 +405,6 @@
         </div>
         <div class="map-container">
             <div id="map"></div>
-            <!-- Added instruction overlay -->
-            <div id="instructionOverlay" class="instruction-overlay" style="display: none;">
-                <p>Click on the map to place your marker</p>
-            </div>
         </div>
         <div class="map-Filter">
             <label for="facultyFilter"><h5>Select Faculty:</h5></label>
@@ -532,7 +421,6 @@
             </select>
         </div>
     </div>
-    <!-- chnage made -->
     
     <!-- Right sidebar with profile -->
     <div class="sidebar">
@@ -548,13 +436,11 @@
         </div>
         <div class="details-section">
             <div class="detail-item"><h5 style="font-weight: 600;font-family: 'Poppins', sans-serif;"></h5></div>
-
-            <div id="addMarkerBtn"></div>
-                   
+            
+            <button class="add-marker-btn">Add marker</button>
         </div>
     </div>
-
-</div>    
+</div>
 
 <!-- Leaflet CSS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -571,17 +457,11 @@
 
     let allMarkers = [];
     let currentMarkers = [];
-    let tempMarker = null;
-    let addingMarker = false;
-    const instructionOverlay = document.getElementById("instructionOverlay");
 
-    // Initialize markers from database
+    
     {% for marker in markers %}
         const marker = L.marker([{{ marker.lat }}, {{ marker.lon }}]).addTo(map);
         marker.bindPopup("<strong>{{ marker.room }}</strong><br>{{ marker.building }}");
-        // Add faculty property to each marker
-        marker.faculty = "{{ marker.faculty }}"; // Make sure your marker model has a faculty field
-        allMarkers.push(marker);
     {% endfor %}
 
     async function fetchBuildings() {
@@ -610,35 +490,20 @@
         elements.forEach(el => {
             const tags = el.tags || {};
             const name = tags.name || '';
-            const faculty = tags.faculty || extractFacultyFromName(name) || 'Unknown';
+            const faculty = tags.faculty || extractFacultyFromName(name);
             const lat = el.center?.lat;
             const lon = el.center?.lon;
 
             if (!lat || !lon) return;
 
             const marker = L.marker([lat, lon]).bindPopup(generatePopupContent(tags));
-            marker.faculty = faculty; // Make sure faculty is properly assigned
+            marker.faculty = faculty;
             allMarkers.push(marker);
         });
 
-        // Display all markers initially
         displayMarkers(allMarkers);
     }
 
-    function filterByFaculty(selected) {
-        if (!selected || selected === "") {
-            // Show all markers if no faculty is selected
-            displayMarkers(allMarkers);
-        } else {
-            // Filter markers by selected faculty
-            const filtered = allMarkers.filter(marker => {
-                return marker.faculty && marker.faculty.toLowerCase() === selected.toLowerCase();
-            });
-            displayMarkers(filtered);
-        }
-    }
-
-    // Rest of your existing functions...
     function extractFacultyFromName(name) {
         const faculties = [
             "Engineering", "Science & Technology", "Humanities & Education",
@@ -661,20 +526,91 @@
         return content;
     }
 
-    function displayMarkers(markers) {
-        // Clear current markers
-        currentMarkers.forEach(m => map.removeLayer(m));
-        currentMarkers = [];
-        
-        // Add new markers
-        markers.forEach(m => {
-            m.addTo(map);
-            currentMarkers.push(m);
-        });
+    function updateDetailPanel(tags) {
+    const detailDiv = document.querySelector('.detail-item');
+    let content = "<h5 style='font-weight: 600;font-family: Poppins, sans-serif;'>Details:</h5>";
+
+    if (!tags || Object.keys(tags).length === 0) {
+        content += "<p>No details found.</p>";
+    } else {
+        content += "<ul style='list-style: none; padding: 0;'>";
+        for (let key in tags) {
+            content += `<li><strong>${key}</strong>: ${tags[key]}</li>`;
+        }
+        content += "</ul>";
     }
 
-    // Initialize the map
-    fetchBuildings();
+    detailDiv.innerHTML = content;
+    }
+    
+
+    function displayMarkers(markers) {
+        currentMarkers.forEach(m => map.removeLayer(m));
+        currentMarkers = markers;
+        currentMarkers.forEach(m => m.addTo(map));
+    }
+
+    function filterByFaculty(selected) {
+        if (!selected) {
+            displayMarkers(allMarkers);
+        } else {
+            const filtered = allMarkers.filter(marker => marker.faculty === selected);
+            displayMarkers(filtered);
+        }
+    }
+
+    map.on('click', async function (e) {
+        const lat = e.latlng.lat;
+        const lon = e.latlng.lng;
+        const delta = 0.0001;
+        const bbox = `${lat - delta},${lon - delta},${lat + delta},${lon + delta}`;
+
+        const query = `
+            [out:json][timeout:25];
+            (
+              node(${bbox});
+              way(${bbox});
+              relation(${bbox});
+            );
+            out center tags;
+        `;
+
+        const url = 'https://overpass-api.de/api/interpreter?data=' + encodeURIComponent(query);
+
+        try {
+            const response = await fetch(url);
+            const data = await response.json();
+
+            if (data.elements.length > 0) {
+                const closest = data.elements[0];
+                const tags = closest.tags || {};
+                const center = closest.center || { lat: closest.lat, lon: closest.lon };
+
+                let info = "<h4>Place Details</h4><ul>";
+                for (let key in tags) {
+                    info += `<li><strong>${key}</strong>: ${tags[key]}</li>`;
+                }
+                info += "</ul>";
+
+                L.popup()
+                    .setLatLng([center.lat, center.lon])
+                    .setContent(info)
+                    .openOn(map);
+
+                    updateDetailPanel(tags);
+
+            } else {
+                L.popup()
+                    .setLatLng([lat, lon])
+                    .setContent("No map data found at this location.")
+                    .openOn(map);
+                    updateDetailPanel(null);
+            }
+        } catch (error) {
+            console.error("Error fetching data from Overpass:", error);
+            updateDetailPanel(null); 
+        }
+    });
 
     // Fix map size issues when view changes
     function updateMapSize() {
@@ -686,5 +622,7 @@
     
     // Wait a moment after page load to ensure map renders correctly
     setTimeout(updateMapSize, 300);
+
+    fetchBuildings();
 </script>
 {% endblock %}
