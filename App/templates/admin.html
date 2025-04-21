@@ -489,25 +489,17 @@
     <!-- Left content area with map -->
     <div class="content-area">
         <div class="header">
-            
+            <div class="search-bar">
+                <input type="text" class="search-input" placeholder="Search">
+            </div>
             <div>
-                {% if is_authenticated %}
-                    <p style="display: inline; font-size: 15px; color: #DBE3F6;margin-left: 10px;margin-right: 2px; font-family: 'Poppins', sans-serif;font-weight: bold;">ADMIN(bob)</p>
+                <p style="display: inline; font-size: 15px; color: #DBE3F6;margin-left: 10px;margin-right: 2px; font-family: 'Poppins', sans-serif;font-weight: bold;">ADMIN({{current_user.username}})</p>
 
                 <a href="{{ url_for('auth_views.logout_action') }}">
 
                     <button class="button button1">Logout</button>
                 </a>
-                {%else%}
-
-                    <p style="display: inline; font-size: 15px; color: #DBE3F6;margin-left: 10px;margin-right: 2px; font-family: 'Poppins', sans-serif;font-weight: bold;">WELCOME User</p>
-                    
-
-                    <a href="{{ url_for('auth_views.get_login_page') }}">
-                        <button class="button button1">Login</button>
-                    </a>
-
-                {% endif %}
+                
             </div>
         </div>
         <div class="map-container">
@@ -548,12 +540,46 @@
         <div class="details-section">
             <div class="detail-item"><h5 style="font-weight: 600;font-family: 'Poppins', sans-serif;"></h5></div>
 
+                      
+            <button class="add-marker-btn" id="addMarkerBtn">Add marker</button>
+
             
+                
                    
         </div>
     </div>
 
-    
+    <!-- Add Marker Modal -->
+    <div id="addMarkerModal" class="modal">
+        <div class="modal-content">
+            <h2>Add New Marker</h2>
+            <form id="markerForm">
+                <div class="form-group">
+                    <label for="markerName">Name:</label>
+                    <input type="text" id="markerName" name="markerName" placeholder="Enter location name" required>
+                </div>
+                <div class="form-group">
+                    <label for="markerFaculty">Faculty:</label>
+                    <select id="markerFaculty" name="markerFaculty" required>
+                        <option value="">-- Select Faculty --</option>
+                        <option value="Engineering">Engineering</option>
+                        <option value="Science & Technology">Science & Technology</option>
+                        <option value="Humanities & Education">Humanities & Education</option>
+                        <option value="Law">Law</option>
+                        <option value="Food & Agriculture">Agriculture</option>
+                        <option value="Medical Sciences">Medical Sciences</option>
+                        <option value="Social Sciences">Social Sciences</option>
+                        <option value="Sport">Sport</option>
+                    </select>
+                </div>
+                <div class="form-buttons">
+                    <button type="button" class="cancel-btn" id="cancelMarkerBtn">Cancel</button>
+                    <button type="submit" class="submit-btn">Add Marker</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 <!-- Leaflet CSS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
