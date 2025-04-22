@@ -41,6 +41,8 @@ def create_user_endpoint():
 def static_user_page():
   return send_from_directory('static', 'static-user.html')
 
+##############################################################################
+
 @user_views.route('/admin/add', methods=['POST'])
 @jwt_required()
 def add_marker():
@@ -62,8 +64,18 @@ def add_marker():
     except Exception as e:
         return jsonify({'message': 'Failed to add marker'})
     
+###############################################################################
+
 @user_views.route('/admin', methods=['GET'])
 @jwt_required()
 def admin_page():
     markers = Marker.query.all()  # Get all markers from database
-    return render_template('admin.html')#, markers=markers)
+    markers_data = [{
+        'lat': marker.lat,
+        'lon': marker.lon,
+        'building': marker.building.name if marker.building else '',
+        'room': marker.room.room_number if marker.room else ''
+    } for marker in markers]
+    return render_template('admin.html', markers_json=markers_data)
+
+###############################################################################

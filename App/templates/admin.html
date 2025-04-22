@@ -597,10 +597,21 @@
     let addingMarker = false;
     const instructionOverlay = document.getElementById("instructionOverlay");
 
+    //////////////////////////////////////////////////////////////////// view markers from database
     {% for marker in markers %}
         const marker = L.marker([{{ marker.lat }}, {{ marker.lon }}]).addTo(map);
         marker.bindPopup("<strong>{{ marker.room }}</strong><br>{{ marker.building }}");
     {% endfor %}
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////
+    // const markersData = {{ markers_json|tojson|safe }};
+    
+    // markersData.forEach(marker => {
+    //     const leafletMarker = L.marker([marker.lat, marker.lon]).addTo(map);
+    //     leafletMarker.bindPopup(`<strong>${marker.room}</strong><br>${marker.building}`);
+    //     allMarkers.push(leafletMarker);
+    // });
+    /////////////////////////////////////////////////////////////////////////////////////////////////
 
     async function fetchBuildings() {
         const bbox = '10.636,-61.404,10.645,-61.395';
