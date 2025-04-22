@@ -42,7 +42,7 @@ def static_user_page():
   return send_from_directory('static', 'static-user.html')
 
 @user_views.route('/admin/add', methods=['POST'])
-# @jwt_required()
+@jwt_required()
 def add_marker():
     data = request.json
     if not data:
@@ -66,4 +66,4 @@ def add_marker():
 @jwt_required()
 def admin_page():
     markers = Marker.query.all()  # Get all markers from database
-    return render_template('admin.html', markers=markers)
+    return render_template('admin.html')#, markers=markers)
